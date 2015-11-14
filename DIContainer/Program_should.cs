@@ -1,4 +1,7 @@
-﻿using FakeItEasy;
+﻿using System;
+using System.IO;
+using FakeItEasy;
+using Ninject;
 using NUnit.Framework;
 
 namespace DIContainer
@@ -13,7 +16,7 @@ namespace DIContainer
             A.CallTo(() => command.Name).Returns("cmd");
             var program = new Program(new CommandLineArgs("CMD"), command);
 
-            program.Run();
+            program.Run(new StreamWriter(Console.OpenStandardOutput()));
 
             A.CallTo(() => command.Execute()).MustHaveHappened();
         }

@@ -9,7 +9,7 @@ namespace DIContainer
 
         public CommandLineArgs(params string[] args)
         {
-            this.args = args;
+        this.args = args;
         }
 
         public string Command

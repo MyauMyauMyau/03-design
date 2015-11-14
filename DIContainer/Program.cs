@@ -1,7 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using DIContainer.Commands;
-
+using Ninject;
 namespace DIContainer
 {
     public class Program
@@ -18,23 +19,26 @@ namespace DIContainer
 
         static void Main(string[] args)
         {
-            var arguments = new CommandLineArgs(args);
-            var printTime = new PrintTimeCommand();
-            var timer = new TimerCommand(arguments);
-            var commands = new ICommand[] { printTime, timer };
-            new Program(arguments, commands).Run();
+            var kernel = new StandardKernel();
+            kernel.Bind<ICommand>().To<TimerCommand>();
+            kernel.Bind<ICommand>().To<PrintTimeCommand>();
+            kernel.Bind<ICommand>().To<HelpCommand>();
+            kernel.Bind<CommandLineArgs>().To<CommandLineArgs>().WithConstructorArgument(args);
+            kernel.Bind<TextWriter>().To<StreamWriter>().WithConstructorArgument(Console.OpenStandardOutput());
+            kernel.Get<Program>().Run(kernel.Get<TextWriter>());
+            Console.ReadKey();
         }
 
-        public void Run()
+        public void Run(TextWriter textWriter)
         {
             if (arguments.Command == null)
             {
-                Console.WriteLine("Please specify <command> as the first command line argument");
+                textWriter.WriteLine("Please specify <command> as the first command line argument");
                 return;
             }
             var command = commands.FirstOrDefault(c => c.Name.Equals(arguments.Command, StringComparison.InvariantCultureIgnoreCase));
             if (command == null)
-                Console.WriteLine("Sorry. Unknown command {0}", arguments.Command);
+                textWriter.WriteLine("Sorry. Unknown command {0}", arguments.Command);
             else
                 command.Execute();
         }
